@@ -1,4 +1,4 @@
-import { load, save } from "./utils.js";
+import { load, save } from './utils.js';
 
 class Option {
   constructor(
@@ -22,90 +22,90 @@ class Option {
 
 const options = [
   new Option(
-    "defaultZoomMode",
-    "on page turn",
-    "",
-    "fit to screen",
-    "select",
+    'defaultZoomMode',
+    'on page turn',
+    '',
+    'fit to screen',
+    'select',
     true,
-    ["fit to screen", "fit to width", "original size", "keep zoom level"],
+    ['fit to screen', 'fit to width', 'original size', 'keep zoom level'],
   ),
 
   new Option(
-    "r2l",
-    "Japanese reading (right to left)",
-    "",
+    'r2l',
+    'Japanese reading (right to left)',
+    '',
     true,
-    "toggle",
+    'toggle',
     false,
   ),
 
-  new Option("doublePageView", "display two pages", "", true, "toggle", false),
+  new Option('doublePageView', 'display two pages', '', true, 'toggle', false),
 
-  new Option("hasCover", "first page is cover", "", false, "toggle", false),
+  new Option('hasCover', 'first page is cover', '', false, 'toggle', false),
 
   new Option(
-    "turnPagesWithArrows",
-    "turn pages with arrow keys",
-    "",
+    'turnPagesWithArrows',
+    'turn pages with arrow keys',
+    '',
     false,
-    "toggle",
+    'toggle',
     true,
   ),
 
-  new Option("ctrlToPan", "ctrl+mouse to move", "", false, "toggle", true),
+  new Option('ctrlToPan', 'ctrl+mouse to move', '', false, 'toggle', true),
 
-  new Option("altToZoom", "alt+scroll to zoom", "", false, "toggle", true),
+  new Option('altToZoom', 'alt+scroll to zoom', '', false, 'toggle', true),
 
-  new Option("displayOCR", "OCR enabled", "", true, "toggle", true),
+  new Option('displayOCR', 'OCR enabled', '', true, 'toggle', true),
 
   new Option(
-    "textBoxBorders",
-    "display boxes outlines",
-    "",
+    'textBoxBorders',
+    'display boxes outlines',
+    '',
     false,
-    "toggle",
+    'toggle',
     true,
   ),
 
-  new Option("editableText", "editable text", "", false, "toggle", true),
+  new Option('editableText', 'editable text', '', false, 'toggle', true),
 
   new Option(
-    "toggleOCRTextBoxes",
-    "toggle OCR text boxes on click",
-    "",
+    'toggleOCRTextBoxes',
+    'toggle OCR text boxes on click',
+    '',
     false,
-    "toggle",
+    'toggle',
     true,
   ),
 
-  new Option("fontSize", "font size:", "", "auto", "select", false, [
-    "auto",
-    "9",
-    "10",
-    "11",
-    "12",
-    "14",
-    "16",
-    "18",
-    "20",
-    "24",
-    "32",
-    "40",
-    "48",
-    "60",
+  new Option('fontSize', 'font size:', '', 'auto', 'select', false, [
+    'auto',
+    '9',
+    '10',
+    '11',
+    '12',
+    '14',
+    '16',
+    '18',
+    '20',
+    '24',
+    '32',
+    '40',
+    '48',
+    '60',
   ]),
 
   new Option(
-    "backgroundColor",
-    "background color",
-    "",
-    "#C4C3D0",
-    "color",
+    'backgroundColor',
+    'background color',
+    '',
+    '#C4C3D0',
+    'color',
     true,
   ),
 
-  new Option("eInkMode", "e-ink mode", "", false, "toggle", true),
+  new Option('eInkMode', 'e-ink mode', '', false, 'toggle', true),
 ];
 
 class Settings {
@@ -116,23 +116,23 @@ class Settings {
   }
 
   static getDefault() {
-    let x = {};
-    for (let option of options) {
+    const x = {};
+    for (const option of options) {
       x[option.id] = option.defaultValue;
     }
     return x;
   }
 
   static getDefaultVolume() {
-    let x = {};
-    for (let option of options) {
+    const x = {};
+    for (const option of options) {
       x[option.id] = null;
     }
     return x;
   }
 
   loadGlobal() {
-    let key = "mokuro/Settings/global";
+    const key = 'mokuro/Settings/global';
 
     const handler = {
       set(target, prop, value) {
@@ -146,7 +146,7 @@ class Settings {
   }
 
   loadVolume(id) {
-    let key = "mokuro/Settings/volume/" + id;
+    const key = `mokuro/Settings/volume/${id}`;
 
     const handler = {
       set(target, prop, value) {
@@ -164,14 +164,14 @@ class Settings {
   }
 
   resetGlobal() {
-    let state = Settings.getDefault();
+    const state = Settings.getDefault();
     for (const k of Object.keys(state)) {
       this.global[k] = state[k];
     }
   }
 
   resetVolume() {
-    let state = Settings.getDefaultVolume();
+    const state = Settings.getDefaultVolume();
     for (const k of Object.keys(state)) {
       this.volume[k] = state[k];
     }
@@ -194,7 +194,7 @@ const settingsHandler = {
   set(target, prop, value) {
     if (target.fields.includes(prop)) {
       throw new Error(
-        "Cannot set value directly in settings. Use settings.global or settings.volume instead.",
+        'Cannot set value directly in settings. Use settings.global or settings.volume instead.',
       );
     }
 

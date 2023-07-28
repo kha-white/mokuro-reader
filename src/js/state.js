@@ -1,8 +1,8 @@
-import { load, save } from "./utils.js";
+import { load, save } from './utils.js';
 
 class GlobalState {
   constructor() {
-    this.key = "mokuro/State/global";
+    this.key = 'mokuro/State/global';
     this.state = null;
     this.fields = Object.keys(GlobalState.getDefault());
   }
@@ -43,11 +43,11 @@ class VolumeState {
   }
 
   get(id) {
-    return load("mokuro/State/volume/" + id, VolumeState.getDefault);
+    return load(`mokuro/State/volume/${id}`, VolumeState.getDefault);
   }
 
   load(id) {
-    this.key = "mokuro/State/volume/" + id;
+    this.key = `mokuro/State/volume/${id}`;
     this.state = load(this.key, VolumeState.getDefault);
   }
 
@@ -61,7 +61,7 @@ class VolumeState {
   }
 
   delete(id) {
-    localStorage.removeItem("mokuro/State/volume/" + id);
+    localStorage.removeItem(`mokuro/State/volume/${id}`);
   }
 }
 

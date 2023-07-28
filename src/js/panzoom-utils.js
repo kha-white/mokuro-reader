@@ -1,7 +1,7 @@
-import { settings } from "./settings";
-import panzoom from "panzoom";
+import panzoom from 'panzoom';
+import { settings } from './settings';
 
-let pc = document.getElementById("pagesContainer");
+const pc = document.getElementById('pagesContainer');
 
 export function initPanzoom() {
   window.pz = panzoom(pc, {
@@ -11,21 +11,21 @@ export function initPanzoom() {
     zoomDoubleClickSpeed: 1,
     enableTextSelection: true,
 
-    beforeMouseDown: function (e) {
-      let shouldIgnore =
+    beforeMouseDown(e) {
+      const shouldIgnore =
         disablePanzoomOnElement(e.target) ||
-        e.target.closest(".textBox") !== null ||
+        e.target.closest('.textBox') !== null ||
         (settings.ctrlToPan && !e.ctrlKey);
       return shouldIgnore;
     },
 
-    beforeWheel: function (e) {
-      let shouldIgnore =
+    beforeWheel(e) {
+      const shouldIgnore =
         (settings.altToZoom && !e.altKey) || disablePanzoomOnElement(e.target);
       return shouldIgnore;
     },
 
-    onTouch: function (e) {
+    onTouch(e) {
       if (disablePanzoomOnElement(e.target)) {
         e.stopPropagation();
         return false;
@@ -33,18 +33,17 @@ export function initPanzoom() {
 
       if (e.touches.length > 1) {
         return true;
-      } else {
-        return false;
       }
+      return false;
     },
 
-    filterKey: function (e) {
+    filterKey(e) {
       if (settings.turnPagesWithArrows) {
         if (
-          e.key === "ArrowLeft" ||
-          e.key === "ArrowRight" ||
-          e.key === "ArrowUp" ||
-          e.key === "ArrowDown"
+          e.key === 'ArrowLeft' ||
+          e.key === 'ArrowRight' ||
+          e.key === 'ArrowUp' ||
+          e.key === 'ArrowDown'
         ) {
           return true;
         }
@@ -53,34 +52,34 @@ export function initPanzoom() {
   });
 
   window.addEventListener(
-    "resize",
-    function (event) {
+    'resize',
+    (event) => {
       setZoomMinMax();
     },
     true,
   );
 
-  window.pz.on("pan", (e) => {
+  window.pz.on('pan', (e) => {
     keepInBounds();
   });
 
-  window.pz.on("zoom", (e) => {
+  window.pz.on('zoom', (e) => {
     keepInBounds();
   });
 
   function keepInBounds() {
-    let transform = window.pz.getTransform();
+    const transform = window.pz.getTransform();
 
-    let x = transform.x;
-    let y = transform.y;
-    let scale = transform.scale;
-    let W = window.innerWidth;
-    let H = window.innerHeight;
-    let w = pc.offsetWidth * scale;
-    let h = pc.offsetHeight * scale;
+    const { x } = transform;
+    const { y } = transform;
+    const { scale } = transform;
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    const w = pc.offsetWidth * scale;
+    const h = pc.offsetHeight * scale;
 
-    let x_margin = W * 0.1;
-    let y_margin = H * 0.1;
+    const x_margin = W * 0.1;
+    const y_margin = H * 0.1;
 
     let min_x = W - w - x_margin;
     let max_x = x_margin;
@@ -113,12 +112,12 @@ export function initPanzoom() {
   }
 
   window.addEventListener(
-    "wheel",
-    function (e) {
+    'wheel',
+    (e) => {
       if (settings.altToZoom) {
         const transforms = pz.getTransform();
-        let dx = e.shiftKey ? e.deltaY : 0;
-        let dy = e.shiftKey ? 0 : -e.deltaY;
+        const dx = e.shiftKey ? e.deltaY : 0;
+        const dy = e.shiftKey ? 0 : -e.deltaY;
 
         pz.moveTo(transforms.x + dx, transforms.y + dy);
       }
@@ -130,7 +129,7 @@ export function initPanzoom() {
 }
 
 function disablePanzoomOnElement(element) {
-  return document.getElementById("topMenu").contains(element);
+  return document.getElementById('topMenu').contains(element);
 }
 
 function getOffsetLeft() {
@@ -139,8 +138,8 @@ function getOffsetLeft() {
 
 function getOffsetTop() {
   let offset = 0;
-  let menu = document.getElementById("topMenu");
-  if (!menu.classList.contains("hidden")) {
+  const menu = document.getElementById('topMenu');
+  if (!menu.classList.contains('hidden')) {
     offset += menu.getBoundingClientRect().bottom + 10;
   }
   return offset;
@@ -163,30 +162,30 @@ function getScreenHeight() {
 }
 
 function panAlign(align_x, align_y) {
-  let scale = window.pz.getTransform().scale;
+  const { scale } = window.pz.getTransform();
   let x;
   let y;
 
   switch (align_x) {
-    case "left":
+    case 'left':
       x = getOffsetLeft();
       break;
-    case "center":
+    case 'center':
       x = getOffsetLeft() + (getScreenWidth() - pc.offsetWidth * scale) / 2;
       break;
-    case "right":
+    case 'right':
       x = getOffsetLeft() + (getScreenWidth() - pc.offsetWidth * scale);
       break;
   }
 
   switch (align_y) {
-    case "top":
+    case 'top':
       y = getOffsetTop();
       break;
-    case "center":
+    case 'center':
       y = getOffsetTop() + (getScreenHeight() - pc.offsetHeight * scale) / 2;
       break;
-    case "bottom":
+    case 'bottom':
       y = getOffsetTop() + (getScreenHeight() - pc.offsetHeight * scale);
       break;
   }
@@ -197,42 +196,44 @@ function panAlign(align_x, align_y) {
 export function zoomOriginal() {
   window.pz.moveTo(0, 0);
   window.pz.zoomTo(0, 0, 1 / window.pz.getTransform().scale);
-  panAlign("center", "center");
+  panAlign('center', 'center');
 }
 
 export function zoomFitToWidth() {
-  let scale =
+  const scale =
     (1 / window.pz.getTransform().scale) * (getScreenWidth() / pc.offsetWidth);
   window.pz.moveTo(0, 0);
   window.pz.zoomTo(0, 0, scale);
-  panAlign("center", "top");
+  panAlign('center', 'top');
 }
 
 export function zoomFitToScreen() {
-  let scale_x = getScreenWidth() / pc.offsetWidth;
-  let scale_y = getScreenHeight() / pc.offsetHeight;
-  let scale = (1 / window.pz.getTransform().scale) * Math.min(scale_x, scale_y);
+  const scale_x = getScreenWidth() / pc.offsetWidth;
+  const scale_y = getScreenHeight() / pc.offsetHeight;
+  const scale =
+    (1 / window.pz.getTransform().scale) * Math.min(scale_x, scale_y);
   window.pz.moveTo(0, 0);
   window.pz.zoomTo(0, 0, scale);
-  panAlign("center", "center");
+  panAlign('center', 'center');
 }
 
 export function zoomDefault() {
   switch (settings.defaultZoomMode) {
-    case "fit to screen":
+    case 'fit to screen':
       zoomFitToScreen();
       break;
-    case "fit to width":
+    case 'fit to width':
       zoomFitToWidth();
       break;
-    case "original size":
+    case 'original size':
       zoomOriginal();
       break;
   }
 }
 
 export function setZoomMinMax() {
-  let minZoom, maxZoom;
+  let minZoom;
+  let maxZoom;
   if (pc.offsetWidth === 0 || pc.offsetHeight === 0) {
     minZoom = 0.1;
     maxZoom = 10;

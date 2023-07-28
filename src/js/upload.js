@@ -1,25 +1,25 @@
-import { setVolumeStatus, updateCatalogDisplay } from "./catalog-ui";
-import { readJSON, requestPersistentStorage } from "./utils";
-import { Unzipper } from "bitjs/archive/decompress.js";
-import mime from "mime";
-import * as path from "path";
-import { openPopup } from "./popup";
-import { importFromUrl, importVolume } from "./web-import";
+import * as path from 'path';
+import { Unzipper } from 'bitjs/archive/decompress.js';
+import mime from 'mime';
+import { setVolumeStatus, updateCatalogDisplay } from './catalog-ui';
+import { readJSON, requestPersistentStorage } from './utils';
+import { openPopup } from './popup';
+import { importFromUrl, importVolume } from './web-import';
 
-let dropArea = document.getElementById("popupCatalog");
+const dropArea = document.getElementById('popupCatalog');
 
 [
-  "drag",
-  "dragstart",
-  "dragend",
-  "dragover",
-  "dragenter",
-  "dragleave",
-  "drop",
-].forEach(function (type) {
+  'drag',
+  'dragstart',
+  'dragend',
+  'dragover',
+  'dragenter',
+  'dragleave',
+  'drop',
+].forEach((type) => {
   dropArea.addEventListener(
     type,
-    function (e) {
+    (e) => {
       e.stopPropagation();
       e.preventDefault();
     },
@@ -27,41 +27,41 @@ let dropArea = document.getElementById("popupCatalog");
   );
 });
 
-["dragover", "dragenter"].forEach(function (type) {
+['dragover', 'dragenter'].forEach((type) => {
   dropArea.addEventListener(
     type,
-    function (e) {
-      dropArea.classList.add("isDragover");
+    (e) => {
+      dropArea.classList.add('isDragover');
     },
     false,
   );
 });
 
-["dragleave", "dragend", "drop"].forEach(function (type) {
+['dragleave', 'dragend', 'drop'].forEach((type) => {
   dropArea.addEventListener(
     type,
-    function (e) {
-      dropArea.classList.remove("isDragover");
+    (e) => {
+      dropArea.classList.remove('isDragover');
     },
     false,
   );
 });
 
 dropArea.addEventListener(
-  "drop",
-  async function (e) {
+  'drop',
+  async (e) => {
     const dt = e.dataTransfer;
 
-    let text = e.dataTransfer.getData("text/plain");
+    const text = e.dataTransfer.getData('text/plain');
     if (text) {
       await importFromUrl(text);
     }
 
-    let filePromises = [];
+    const filePromises = [];
 
     for (const item of dt.items) {
-      if (item.kind === "file") {
-        let entry = item.webkitGetAsEntry();
+      if (item.kind === 'file') {
+        const entry = item.webkitGetAsEntry();
         if (entry.isDirectory) {
           filePromises.push(scanFiles(entry));
         } else {
@@ -70,9 +70,9 @@ dropArea.addEventListener(
       }
     }
 
-    let files = await Promise.all(filePromises).then((fileArrays) => {
-      return [].concat(...fileArrays);
-    });
+    const files = await Promise.all(filePromises).then((fileArrays) =>
+      [].concat(...fileArrays),
+    );
 
     await processFiles(files);
   },
@@ -100,26 +100,25 @@ function readAllEntries(directoryReader) {
 
 function scanFiles(directoryEntry, path = directoryEntry.name) {
   return new Promise((resolve, reject) => {
-    let reader = directoryEntry.createReader();
+    const reader = directoryEntry.createReader();
     readAllEntries(reader)
       .then((entries) => {
-        let filePromises = entries.map((entry) => {
-          let fullPath = path + "/" + entry.name;
+        const filePromises = entries.map((entry) => {
+          const fullPath = `${path}/${entry.name}`;
           if (entry.isDirectory) {
             return scanFiles(entry, fullPath);
-          } else {
-            return new Promise((resolve, reject) => {
-              entry.file((file) => {
-                file.fullPath = fullPath;
-                resolve(file);
-              }, reject);
-            });
           }
+          return new Promise((resolve, reject) => {
+            entry.file((file) => {
+              file.fullPath = fullPath;
+              resolve(file);
+            }, reject);
+          });
         });
 
         Promise.all(filePromises)
           .then((fileArrays) => {
-            let files = [].concat(...fileArrays);
+            const files = [].concat(...fileArrays);
             resolve(files);
           })
           .catch(reject);
@@ -129,30 +128,30 @@ function scanFiles(directoryEntry, path = directoryEntry.name) {
 }
 
 export async function importUrlPrompt() {
-  let text = prompt("Enter URL to import:");
+  const text = prompt('Enter URL to import:');
   await importFromUrl(text);
 }
 
-document.getElementById("uploadFile").addEventListener(
-  "change",
+document.getElementById('uploadFile').addEventListener(
+  'change',
   async function () {
     await processFiles(this.files);
   },
   false,
 );
 
-document.getElementById("uploadDirectory").addEventListener(
-  "change",
+document.getElementById('uploadDirectory').addEventListener(
+  'change',
   async function () {
     await processFiles(this.files);
   },
   false,
 );
 
-document.getElementById("uploadHelpButton").addEventListener(
-  "click",
-  function () {
-    openPopup("popupUploadHelp", false);
+document.getElementById('uploadHelpButton').addEventListener(
+  'click',
+  () => {
+    openPopup('popupUploadHelp', false);
   },
   false,
 );
@@ -160,44 +159,44 @@ document.getElementById("uploadHelpButton").addEventListener(
 function parsePath(file) {
   let filepath;
 
-  if ("fullPath" in file) {
+  if ('fullPath' in file) {
     filepath = file.fullPath;
-  } else if ("webkitRelativePath" in file && file.webkitRelativePath) {
-    filepath = file.webkitRelativePath.replace("\\", "/");
-  } else if ("path_components" in file) {
-    filepath = file.path_components.replace("\\", "/");
+  } else if ('webkitRelativePath' in file && file.webkitRelativePath) {
+    filepath = file.webkitRelativePath.replace('\\', '/');
+  } else if ('path_components' in file) {
+    filepath = file.path_components.replace('\\', '/');
   } else {
     filepath = file.name;
   }
 
-  let parsed_path = path.parse(filepath);
+  const parsed_path = path.parse(filepath);
 
   parsed_path.filepath = filepath;
   parsed_path.ext = parsed_path.ext.toLowerCase();
   parsed_path.path_no_ext = path
     .join(parsed_path.dir, parsed_path.name)
-    .replace("\\", "/");
+    .replace('\\', '/');
   parsed_path.mime = mime.getType(filepath);
 
   return parsed_path;
 }
 
 async function processFiles(files) {
-  let volumes_to_process = {};
+  const volumes_to_process = {};
 
-  for (let file of files) {
-    let parsed_path = parsePath(file);
+  for (const file of files) {
+    const parsed_path = parsePath(file);
 
-    if (parsed_path.ext === ".mokuro") {
-      let mokuroData = await readJSON(file);
+    if (parsed_path.ext === '.mokuro') {
+      const mokuroData = await readJSON(file);
 
       if (mokuroData.volume_uuid in catalog.volumes) {
-        console.log("Skipping already loaded volume " + parsed_path.filepath);
+        console.log(`Skipping already loaded volume ${parsed_path.filepath}`);
         continue;
       }
 
       volumes_to_process[parsed_path.path_no_ext] = {
-        mokuroData: mokuroData,
+        mokuroData,
         volumeName: parsed_path.name,
         archiveFile: null,
         files: {},
@@ -205,17 +204,17 @@ async function processFiles(files) {
     }
   }
 
-  for (let file of files) {
-    let parsed_path = parsePath(file);
+  for (const file of files) {
+    const parsed_path = parsePath(file);
 
-    if (parsed_path.mime === "image/jpeg" || parsed_path.mime === "image/png") {
+    if (parsed_path.mime === 'image/jpeg' || parsed_path.mime === 'image/png') {
       for (const k of Object.keys(volumes_to_process)) {
-        if (parsed_path.filepath.startsWith(k + "/")) {
+        if (parsed_path.filepath.startsWith(`${k}/`)) {
           volumes_to_process[k].files[path.relative(k, parsed_path.filepath)] =
             file;
         }
       }
-    } else if (parsed_path.ext === ".zip" || parsed_path.ext === ".cbz") {
+    } else if (parsed_path.ext === '.zip' || parsed_path.ext === '.cbz') {
       if (parsed_path.path_no_ext in volumes_to_process) {
         volumes_to_process[parsed_path.path_no_ext].archiveFile = file;
       }
@@ -226,63 +225,63 @@ async function processFiles(files) {
     await requestPersistentStorage();
   }
 
-  let promises = [];
+  const promises = [];
   for (const vtp of Object.values(volumes_to_process)) {
     promises.push(processVolume(vtp));
   }
 
-  let results = await Promise.all(promises);
-  let failed = results.filter((r) => !r.loaded);
+  const results = await Promise.all(promises);
+  const failed = results.filter((r) => !r.loaded);
   if (failed.length) {
-    let msg = "Failed to load volumes:\n";
+    let msg = 'Failed to load volumes:\n';
     for (const f of failed) {
       msg += f.volumeName;
-      if (f.loadingFrom === "missing") {
-        msg += ": missing volume data";
+      if (f.loadingFrom === 'missing') {
+        msg += ': missing volume data';
       }
-      msg += "\n";
+      msg += '\n';
     }
 
     msg +=
-      "\nMake sure that each .mokuro file is uploaded together with corresponding volume data (images folder or cbz/zip archive).";
+      '\nMake sure that each .mokuro file is uploaded together with corresponding volume data (images folder or cbz/zip archive).';
     msg += '\n\nClick "What to upload?" for more information.';
     alert(msg);
   }
 
-  document.getElementById("uploadForm").reset();
+  document.getElementById('uploadForm').reset();
   await window.catalog.save();
   updateCatalogDisplay();
 }
 
 async function processVolume(volume_to_process) {
-  let mokuroData = volume_to_process.mokuroData;
-  let volumeName = volume_to_process.volumeName;
-  let archiveFile = volume_to_process.archiveFile;
-  let files = volume_to_process.files;
+  const { mokuroData } = volume_to_process;
+  const { volumeName } = volume_to_process;
+  const { archiveFile } = volume_to_process;
+  const { files } = volume_to_process;
 
-  let volumeLoadingStatus = {
-    volumeName: volumeName,
+  const volumeLoadingStatus = {
+    volumeName,
     loadingFrom: null,
     loaded: false,
   };
 
   if (Object.keys(files).length >= mokuroData.pages.length) {
-    console.log('Loading volume "' + volumeName + '" from files');
-    volumeLoadingStatus.loadingFrom = "files";
+    console.log(`Loading volume "${volumeName}" from files`);
+    volumeLoadingStatus.loadingFrom = 'files';
   } else if (archiveFile) {
-    console.log('Loading volume "' + volumeName + '" from archive');
-    volumeLoadingStatus.loadingFrom = "archive";
+    console.log(`Loading volume "${volumeName}" from archive`);
+    volumeLoadingStatus.loadingFrom = 'archive';
   } else {
-    console.log('Skipping volume "' + volumeName + '" due to missing files');
-    volumeLoadingStatus.loadingFrom = "missing";
+    console.log(`Skipping volume "${volumeName}" due to missing files`);
+    volumeLoadingStatus.loadingFrom = 'missing';
     return volumeLoadingStatus;
   }
 
-  let title = await window.catalog.addTitleIfNotExists(
+  const title = await window.catalog.addTitleIfNotExists(
     mokuroData.title,
     mokuroData.title_uuid,
   );
-  let volume = await title.addVolumeIfNotExists(
+  const volume = await title.addVolumeIfNotExists(
     mokuroData,
     volumeName,
     mokuroData.volume_uuid,
@@ -291,12 +290,12 @@ async function processVolume(volume_to_process) {
   await window.catalog.save();
   updateCatalogDisplay();
 
-  if (volumeLoadingStatus.loadingFrom === "archive") {
+  if (volumeLoadingStatus.loadingFrom === 'archive') {
     await loadVolumeFromArchive(volume, volumeName, archiveFile);
-  } else if (volumeLoadingStatus.loadingFrom === "files") {
+  } else if (volumeLoadingStatus.loadingFrom === 'files') {
     await volume.addImgs(Object.values(files), Object.keys(files));
   } else {
-    throw new Error("Unknown loadingFrom: " + volumeLoadingStatus.loadingFrom);
+    throw new Error(`Unknown loadingFrom: ${volumeLoadingStatus.loadingFrom}`);
   }
 
   volumeLoadingStatus.loaded = true;
@@ -308,7 +307,7 @@ async function processVolume(volume_to_process) {
 }
 
 async function loadVolumeFromArchive(volume, volumeName, archiveFile) {
-  let data = await archiveFile.arrayBuffer();
+  const data = await archiveFile.arrayBuffer();
   const unzipper = new Unzipper(data);
 
   // unzipper.addEventListener('progress', function (e) {
@@ -316,7 +315,7 @@ async function loadVolumeFromArchive(volume, volumeName, archiveFile) {
   //     // e.totalCompressedBytesRead has how many bytes have been unzipped so far
   // });
 
-  unzipper.addEventListener("extract", async function (e) {
+  unzipper.addEventListener('extract', async (e) => {
     // e.unarchivedFile.filename: string
     // e.unarchivedFile.fileData: Uint8Array
 
@@ -325,23 +324,23 @@ async function loadVolumeFromArchive(volume, volumeName, archiveFile) {
 
     // try to decode filename in utf-8 and fallback to shift JIS if it fails
     try {
-      td = new TextDecoder("utf-8", { fatal: true });
+      td = new TextDecoder('utf-8', { fatal: true });
       relativePath = td.decode(e.unarchivedFile.filenameBytes);
     } catch (error) {
-      td = new TextDecoder("sjis", { fatal: true });
+      td = new TextDecoder('sjis', { fatal: true });
       relativePath = td.decode(e.unarchivedFile.filenameBytes);
     }
 
     // console.log(relativePath);
 
-    let mime_ = mime.getType(relativePath);
+    const mime_ = mime.getType(relativePath);
 
-    if (mime_ === "image/jpeg" || mime_ === "image/png") {
-      if (relativePath.startsWith(volumeName + "/")) {
+    if (mime_ === 'image/jpeg' || mime_ === 'image/png') {
+      if (relativePath.startsWith(`${volumeName}/`)) {
         relativePath = relativePath.slice(volumeName.length + 1);
       }
 
-      let file = new File([e.unarchivedFile.fileData], relativePath, {
+      const file = new File([e.unarchivedFile.fileData], relativePath, {
         type: mime_,
       });
       await volume.addImg(file, relativePath);

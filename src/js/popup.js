@@ -34,16 +34,16 @@ export function closeAllPopups() {
 
 export function showPopup(popupId) {
   hideAllPopups();
-  document.getElementById(popupId).style.display = "block";
-  document.getElementById("dimOverlay").style.display = "initial";
+  document.getElementById(popupId).style.display = 'block';
+  document.getElementById('dimOverlay').style.display = 'initial';
   window.pz.pause();
 }
 
 export function hideAllPopups() {
-  document.querySelectorAll(".popup").forEach(function (x) {
-    x.style.display = "none";
+  document.querySelectorAll('.popup').forEach((x) => {
+    x.style.display = 'none';
   });
 
-  document.getElementById("dimOverlay").style.display = "none";
+  document.getElementById('dimOverlay').style.display = 'none';
   window.pz.resume();
 }

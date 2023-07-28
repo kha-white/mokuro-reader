@@ -20,7 +20,7 @@ body {
   overflow: hidden;
   margin: 0;
   background-color: var(--colorBackground);
-  font-family: "Open Sans", sans-serif;
+  font-family: 'Open Sans', sans-serif;
   color: var(--color3);
 }
 
@@ -42,7 +42,7 @@ a:hover {
 }
 
 .pageContainer * {
-  font-family: "Noto Sans JP", "Meiryo", "MS Gothic", sans-serif;
+  font-family: 'Noto Sans JP', 'Meiryo', 'MS Gothic', sans-serif;
 }
 
 .pageContainer {
@@ -280,7 +280,7 @@ a:hover {
   background-color: var(--color2);
 }
 
-.dropdown-content .dropdown-option [type="checkbox"] {
+.dropdown-content .dropdown-option [type='checkbox'] {
   vertical-align: middle;
 }
 
@@ -544,6 +544,6 @@ input::-webkit-inner-spin-button {
   margin: 0;
 }
 
-input[type="number"] {
+input[type='number'] {
   -moz-appearance: textfield;
 }

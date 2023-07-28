@@ -1,10 +1,10 @@
-import { get, set, del, delMany, setMany } from "idb-keyval";
+import { get, set, del, delMany, setMany } from 'idb-keyval';
 
-import { sortByProperty } from "./utils.js";
-import { volumeState } from "./state";
+import { sortByProperty } from './utils.js';
+import { volumeState } from './state';
 
 class Volume {
-  static serializedFields = ["name", "mokuroData", "id", "imgStoredMap", "url"];
+  static serializedFields = ['name', 'mokuroData', 'id', 'imgStoredMap', 'url'];
 
   constructor(
     parentCatalog,
@@ -44,12 +44,12 @@ class Volume {
   }
 
   toString() {
-    return this.parentTitle.name + "/" + this.name;
+    return `${this.parentTitle.name}/${this.name}`;
   }
 
   serialize() {
-    let x = {};
-    for (let field of Volume.serializedFields) {
+    const x = {};
+    for (const field of Volume.serializedFields) {
       x[field] = this[field];
     }
     return x;
@@ -68,9 +68,9 @@ class Volume {
   }
 
   getImgStoredMap(mokuroData) {
-    let imgStoredMap = {};
+    const imgStoredMap = {};
     for (const page of mokuroData.pages) {
-      imgStoredMap[page.img_path.replace("\\", "/")] = false;
+      imgStoredMap[page.img_path.replace('\\', '/')] = false;
     }
     return imgStoredMap;
   }
@@ -88,50 +88,45 @@ class Volume {
 
   getStatusString() {
     if (this.isFullyStored()) {
-      return "";
-    } else if (this.lastStoredPath === null) {
-      return "Loading...";
-    } else {
-      return (
-        "Loading... (" +
-        this.getNumStoredImgs() +
-        "/" +
-        this.mokuroData.pages.length +
-        ") " +
-        this.lastStoredPath
-      );
+      return '';
     }
+    if (this.lastStoredPath === null) {
+      return 'Loading...';
+    }
+    return `Loading... (${this.getNumStoredImgs()}/${
+      this.mokuroData.pages.length
+    }) ${this.lastStoredPath}`;
   }
 
   getImgKey(relativePath) {
-    return "volume_" + this.id + "/" + relativePath.replace("\\", "/");
+    return `volume_${this.id}/${relativePath.replace('\\', '/')}`;
   }
 
   async addImg(imgFile, relativePath) {
-    relativePath = relativePath.replace("\\", "/");
+    relativePath = relativePath.replace('\\', '/');
     if (relativePath in this.imgStoredMap) {
       await set(this.getImgKey(relativePath), imgFile);
       this.imgStoredMap[relativePath] = true;
       this.lastStoredPath = relativePath;
     } else {
-      console.log("Skipping adding file: " + relativePath);
+      console.log(`Skipping adding file: ${relativePath}`);
     }
   }
 
   async addImgs(imgFiles, relativePaths) {
-    let keyvals = [];
-    let relativePathsToStore = [];
+    const keyvals = [];
+    const relativePathsToStore = [];
 
     for (let i = 0; i < imgFiles.length; i++) {
-      let imgFile = imgFiles[i];
+      const imgFile = imgFiles[i];
       let relativePath = relativePaths[i];
-      relativePath = relativePath.replace("\\", "/");
+      relativePath = relativePath.replace('\\', '/');
 
       if (relativePath in this.imgStoredMap) {
         keyvals.push([this.getImgKey(relativePath), imgFile]);
         relativePathsToStore.push(relativePath);
       } else {
-        console.log("Skipping adding file: " + relativePath);
+        console.log(`Skipping adding file: ${relativePath}`);
       }
     }
 
@@ -145,30 +140,29 @@ class Volume {
 
   async getImgURL(relativePath) {
     if (this.url !== null) {
-      return this.url + "/" + relativePath;
+      return `${this.url}/${relativePath}`;
     }
 
-    let key = this.getImgKey(relativePath);
+    const key = this.getImgKey(relativePath);
 
     if (key in this.URLs) {
       return this.URLs[key];
-    } else {
-      let imgFile = await get(key);
-
-      if (imgFile === undefined) {
-        console.error(
-          "Missing image for volume " + this.toString() + ": " + relativePath,
-        );
-      }
-
-      let imgURL = URL.createObjectURL(imgFile);
-      this.URLs[key] = imgURL;
-      return imgURL;
     }
+    const imgFile = await get(key);
+
+    if (imgFile === undefined) {
+      console.error(
+        `Missing image for volume ${this.toString()}: ${relativePath}`,
+      );
+    }
+
+    const imgURL = URL.createObjectURL(imgFile);
+    this.URLs[key] = imgURL;
+    return imgURL;
   }
 
   clearURLs() {
-    for (let url of Object.values(this.URLs)) {
+    for (const url of Object.values(this.URLs)) {
       URL.revokeObjectURL(url);
     }
     this.URLs = {};
@@ -176,7 +170,7 @@ class Volume {
 }
 
 class Title {
-  static serializedFields = ["name", "id"];
+  static serializedFields = ['name', 'id'];
 
   constructor(parentCatalog, name, id = null) {
     this.id = id === null ? parentCatalog.getNewId() : id;
@@ -203,13 +197,13 @@ class Title {
   }
 
   serialize() {
-    let x = {};
-    for (let field of Title.serializedFields) {
+    const x = {};
+    for (const field of Title.serializedFields) {
       x[field] = this[field];
     }
 
     x.volumes = [];
-    for (let volume of Object.values(this.volumes)) {
+    for (const volume of Object.values(this.volumes)) {
       x.volumes.push(volume.serialize());
     }
 
@@ -217,9 +211,9 @@ class Title {
   }
 
   static deserialize(x, parentCatalog) {
-    let title = new Title(parentCatalog, x.name, x.id);
+    const title = new Title(parentCatalog, x.name, x.id);
 
-    for (let v of x.volumes) {
+    for (const v of x.volumes) {
       Volume.deserialize(v, parentCatalog, title);
     }
 
@@ -242,7 +236,7 @@ class Title {
   }
 
   getVolumes() {
-    return sortByProperty(Object.values(this.volumes), "name", true, true);
+    return sortByProperty(Object.values(this.volumes), 'name', true, true);
   }
 }
 
@@ -265,32 +259,32 @@ class Catalog {
   }
 
   getTitles() {
-    return sortByProperty(Object.values(this.titles), "name", true, true);
+    return sortByProperty(Object.values(this.titles), 'name', true, true);
   }
 
   static async load() {
-    let catalog = new Catalog();
-    let c = await get("mokuroCatalog");
+    const catalog = new Catalog();
+    const c = await get('mokuroCatalog');
 
     if (c !== undefined) {
       catalog.nextId = c.nextId;
-      for (let t of Object.values(c.titles)) {
+      for (const t of Object.values(c.titles)) {
         Title.deserialize(t, catalog);
       }
-      console.log("Loaded catalog");
+      console.log('Loaded catalog');
     }
     return catalog;
   }
 
   async save() {
-    let c = { nextId: this.nextId, titles: [] };
-    for (let title of Object.values(this.titles)) {
+    const c = { nextId: this.nextId, titles: [] };
+    for (const title of Object.values(this.titles)) {
       c.titles.push(title.serialize());
     }
 
-    await set("mokuroCatalog", c)
-      .then(() => console.log("Catalog saved"))
-      .catch((err) => console.log("Error while saving catalog", err));
+    await set('mokuroCatalog', c)
+      .then(() => console.log('Catalog saved'))
+      .catch((err) => console.log('Error while saving catalog', err));
   }
 }
 

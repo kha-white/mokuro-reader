@@ -1,13 +1,13 @@
-import { globalState, volumeState } from "./state";
-import { settings } from "./settings";
-import { appendNewChild, clip, sortByProperty } from "./utils";
-import { setStatusBarText, showStatusBarForTime } from "./status-bar";
-import { updateProperties, updateSettingsDisplay } from "./settings-ui";
-import { closeAllPopups } from "./popup";
-import { updatePage } from "./page-utils";
-import { selectBox } from "./select-box";
+import { globalState, volumeState } from './state';
+import { settings } from './settings';
+import { appendNewChild, clip, sortByProperty } from './utils';
+import { setStatusBarText, showStatusBarForTime } from './status-bar';
+import { updateProperties, updateSettingsDisplay } from './settings-ui';
+import { closeAllPopups } from './popup';
+import { updatePage } from './page-utils';
+import { selectBox } from './select-box';
 
-let pc = document.getElementById("pagesContainer");
+const pc = document.getElementById('pagesContainer');
 
 export async function loadVolume(id) {
   let volume;
@@ -28,9 +28,9 @@ export async function loadVolume(id) {
     globalState.loadedVolumeId = null;
     volumeState.reset();
     settings.unloadVolume();
-    setStatusBarText("No volume loaded");
+    setStatusBarText('No volume loaded');
   } else {
-    let pages = volume.mokuroData.pages;
+    const { pages } = volume.mokuroData;
     window.numPages = pages.length;
     window.numPagesLoaded = 0;
 
@@ -40,7 +40,7 @@ export async function loadVolume(id) {
     volumeState.lastOpened = Date.now();
     settings.loadVolume(volume.id);
 
-    let promises = [];
+    const promises = [];
     for (
       let pageIdx = volumeState.page_idx;
       pageIdx < window.numPages;
@@ -63,25 +63,30 @@ export async function loadVolume(id) {
 }
 
 async function loadPage(volume, pageIdx) {
-  let pageJSON = volume.mokuroData.pages[pageIdx];
-  let W = pageJSON.img_width;
-  let H = pageJSON.img_height;
+  const pageJSON = volume.mokuroData.pages[pageIdx];
+  const W = pageJSON.img_width;
+  const H = pageJSON.img_height;
 
-  let page = appendNewChild(pc, "div");
-  page.id = "page" + pageIdx;
-  page.classList.add("page");
+  const page = appendNewChild(pc, 'div');
+  page.id = `page${pageIdx}`;
+  page.classList.add('page');
 
-  let pageContainer = appendNewChild(page, "div");
-  pageContainer.classList.add("pageContainer");
+  const pageContainer = appendNewChild(page, 'div');
+  pageContainer.classList.add('pageContainer');
   pageContainer.style.width = W;
   pageContainer.style.height = H;
-  let imgURL = await volume.getImgURL(pageJSON.img_path);
-  pageContainer.style.backgroundImage = 'url("' + imgURL + '")';
+  const imgURL = await volume.getImgURL(pageJSON.img_path);
+  pageContainer.style.backgroundImage = `url("${imgURL}")`;
 
   let textBoxes = [];
 
-  for (let blockJSON of pageJSON.blocks) {
-    let xmin, ymin, xmax, ymax, w, h;
+  for (const blockJSON of pageJSON.blocks) {
+    let xmin;
+    let ymin;
+    let xmax;
+    let ymax;
+    let w;
+    let h;
     [xmin, ymin, xmax, ymax] = blockJSON.box;
     xmin = clip(xmin, 0, W);
     ymin = clip(ymin, 0, H);
@@ -89,27 +94,27 @@ async function loadPage(volume, pageIdx) {
     ymax = clip(ymax, 0, H);
     w = xmax - xmin;
     h = ymax - ymin;
-    let area = w * h;
+    const area = w * h;
 
-    let textBox = appendNewChild(pageContainer, "div");
-    textBox.classList.add("textBox");
+    const textBox = appendNewChild(pageContainer, 'div');
+    textBox.classList.add('textBox');
     textBox.style.left = xmin;
     textBox.style.top = ymin;
     textBox.style.width = w;
     textBox.style.height = h;
-    textBox.style.fontSize = blockJSON.font_size + "px";
+    textBox.style.fontSize = `${blockJSON.font_size}px`;
 
     if (blockJSON.vertical) {
-      textBox.style.writingMode = "vertical-rl";
+      textBox.style.writingMode = 'vertical-rl';
     }
 
-    for (let line of blockJSON.lines) {
-      let p = appendNewChild(textBox, "p");
+    for (const line of blockJSON.lines) {
+      const p = appendNewChild(textBox, 'p');
       p.appendChild(document.createTextNode(line));
     }
 
     textBox.addEventListener(
-      "click",
+      'click',
       function (e) {
         if (settings.toggleOCRTextBoxes || settings.editableText) {
           selectBox(this);
@@ -118,25 +123,21 @@ async function loadPage(volume, pageIdx) {
       false,
     );
 
-    textBoxes.push({ textBox: textBox, area: area });
+    textBoxes.push({ textBox, area });
   }
 
   // assign z-index ordering from largest to smallest boxes,
   // so that smaller boxes don't get hidden underneath larger ones
-  textBoxes = sortByProperty(textBoxes, "area", false);
+  textBoxes = sortByProperty(textBoxes, 'area', false);
   for (let i = 0; i < textBoxes.length; i++) {
     textBoxes[i].textBox.style.zIndex = 10 + i;
   }
 
   window.numPagesLoaded += 1;
   setStatusBarText(
-    "Loading " +
-      volume.toString() +
-      " (" +
-      window.numPagesLoaded +
-      "/" +
-      window.numPages +
-      ")",
+    `Loading ${volume.toString()} (${window.numPagesLoaded}/${
+      window.numPages
+    })`,
   );
   showStatusBarForTime(3000);
 

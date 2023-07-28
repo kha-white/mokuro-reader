@@ -1,15 +1,12 @@
-import { appendNewChild, formatBytes } from "./utils";
-import { volumeState } from "./state";
-import { loadVolume } from "./load-volume";
-import { Catalog } from "./catalog";
-import { clear } from "idb-keyval";
+import { clear } from 'idb-keyval';
+import { appendNewChild, formatBytes } from './utils';
+import { volumeState } from './state';
+import { loadVolume } from './load-volume';
+import { Catalog } from './catalog';
 
 async function deleteVolume(id) {
-  let volume = window.catalog.volumes[id];
-  let msg =
-    'Delete "' +
-    volume.toString() +
-    '"?\n\nThis will delete all data and reading progress associated with this volume from the browser storage.';
+  const volume = window.catalog.volumes[id];
+  const msg = `Delete "${volume.toString()}"?\n\nThis will delete all data and reading progress associated with this volume from the browser storage.`;
   if (confirm(msg)) {
     if (window.loadedVolume === volume) {
       await loadVolume(null);
@@ -20,13 +17,10 @@ async function deleteVolume(id) {
 }
 
 async function deleteTitle(id) {
-  let title = window.catalog.titles[id];
-  let msg =
-    'Delete "' +
-    title.name +
-    '" containing ' +
-    Object.keys(title.volumes).length +
-    " volumes?\n\nThis will delete all data and reading progress associated with this title from the browser storage.";
+  const title = window.catalog.titles[id];
+  const msg = `Delete "${title.name}" containing ${
+    Object.keys(title.volumes).length
+  } volumes?\n\nThis will delete all data and reading progress associated with this title from the browser storage.`;
   if (confirm(msg)) {
     if (
       window.loadedVolume !== null &&
@@ -40,129 +34,130 @@ async function deleteTitle(id) {
 }
 
 export function updateCatalogDisplay() {
-  let catalogDisplay = document.getElementById("catalogDisplay");
+  const catalogDisplay = document.getElementById('catalogDisplay');
   catalogDisplay.replaceChildren();
-  let titleList = appendNewChild(catalogDisplay, "ul");
+  const titleList = appendNewChild(catalogDisplay, 'ul');
   let a;
 
   for (const title of window.catalog.getTitles()) {
-    if (title.id === "demo-title") {
+    if (title.id === 'demo-title') {
       continue;
     }
-    let titleListEl = appendNewChild(titleList, "li");
-    let titleItem = appendNewChild(titleListEl, "span", title.name);
-    titleItem.classList.add("catalogItem");
+    const titleListEl = appendNewChild(titleList, 'li');
+    const titleItem = appendNewChild(titleListEl, 'span', title.name);
+    titleItem.classList.add('catalogItem');
 
-    a = appendNewChild(titleItem, "a");
-    a.classList.add("deleteCatalogItemButton");
-    a.href = "#";
+    a = appendNewChild(titleItem, 'a');
+    a.classList.add('deleteCatalogItemButton');
+    a.href = '#';
     a.addEventListener(
-      "click",
-      async function () {
+      'click',
+      async () => {
         await deleteTitle(title.id);
       },
       false,
     );
-    a.appendChild(document.createTextNode("x"));
+    a.appendChild(document.createTextNode('x'));
 
-    let volumeList = appendNewChild(titleListEl, "ul");
+    const volumeList = appendNewChild(titleListEl, 'ul');
 
     for (const volume of title.getVolumes()) {
-      let volumeListEl = appendNewChild(volumeList, "li");
-      let volumeItem = appendNewChild(volumeListEl, "span");
-      volumeItem.classList.add("catalogItem");
+      const volumeListEl = appendNewChild(volumeList, 'li');
+      const volumeItem = appendNewChild(volumeListEl, 'span');
+      volumeItem.classList.add('catalogItem');
 
       if (volume.isFullyStored()) {
-        a = appendNewChild(volumeItem, "a");
-        a.href = "#";
+        a = appendNewChild(volumeItem, 'a');
+        a.href = '#';
 
         a.addEventListener(
-          "click",
-          async function () {
+          'click',
+          async () => {
             await loadVolume(volume.id);
           },
           false,
         );
       } else {
-        a = appendNewChild(volumeItem, "span");
+        a = appendNewChild(volumeItem, 'span');
       }
 
       a.appendChild(document.createTextNode(volume.name));
 
-      let state = volumeState.get(volume.id);
-      let page_idx = Math.max(state.page_idx, state.page2_idx) + 1;
-      let num_pages = volume.mokuroData.pages.length;
+      const state = volumeState.get(volume.id);
+      const page_idx = Math.max(state.page_idx, state.page2_idx) + 1;
+      const num_pages = volume.mokuroData.pages.length;
 
-      let volumeStats = appendNewChild(
+      const volumeStats = appendNewChild(
         volumeItem,
-        "span",
-        "(" + page_idx + "/" + num_pages + ")",
+        'span',
+        `(${page_idx}/${num_pages})`,
       );
-      volumeStats.id = "volumeStats" + volume.id;
-      volumeStats.classList.add("volumeStats");
+      volumeStats.id = `volumeStats${volume.id}`;
+      volumeStats.classList.add('volumeStats');
 
-      let volumeStatus = appendNewChild(
+      const volumeStatus = appendNewChild(
         volumeItem,
-        "span",
+        'span',
         volume.getStatusString(),
       );
-      volumeStatus.id = "volumeStatus" + volume.id;
-      volumeStatus.classList.add("volumeStatus");
+      volumeStatus.id = `volumeStatus${volume.id}`;
+      volumeStatus.classList.add('volumeStatus');
 
       if (volume.url !== null) {
-        let volumeUrl = appendNewChild(volumeItem, "a", "↪");
-        volumeUrl.classList.add("volumeUrl");
+        const volumeUrl = appendNewChild(volumeItem, 'a', '↪');
+        volumeUrl.classList.add('volumeUrl');
         volumeUrl.href = volume.url;
       }
 
-      a = appendNewChild(volumeItem, "a");
-      a.classList.add("deleteCatalogItemButton");
-      a.href = "#";
+      a = appendNewChild(volumeItem, 'a');
+      a.classList.add('deleteCatalogItemButton');
+      a.href = '#';
       a.addEventListener(
-        "click",
-        async function () {
+        'click',
+        async () => {
           deleteVolume(volume.id);
         },
         false,
       );
-      a.appendChild(document.createTextNode("x"));
+      a.appendChild(document.createTextNode('x'));
     }
   }
 
-  let catalogStatus = document.getElementById("catalogStatus");
+  const catalogStatus = document.getElementById('catalogStatus');
 
-  if ("storage" in navigator && "estimate" in navigator.storage) {
+  if ('storage' in navigator && 'estimate' in navigator.storage) {
     navigator.storage.estimate().then(({ usage, quota }) => {
-      catalogStatus.textContent =
-        formatBytes(usage) + " / " + formatBytes(quota);
+      catalogStatus.textContent = `${formatBytes(usage)} / ${formatBytes(
+        quota,
+      )}`;
       if (usage > quota * 0.9 || quota - usage < 1024 * 1024 * 100) {
-        catalogStatus.classList.add("colorRed");
+        catalogStatus.classList.add('colorRed');
       } else {
-        catalogStatus.classList.remove("colorRed");
+        catalogStatus.classList.remove('colorRed');
       }
     });
   }
 }
 
 export function setVolumePageState(volume_id, page_idx, num_pages) {
-  let volumeStats = document.getElementById("volumeStats" + volume_id);
+  const volumeStats = document.getElementById(`volumeStats${volume_id}`);
   if (volumeStats !== null) {
-    volumeStats.textContent = "(" + page_idx + "/" + num_pages + ")";
+    volumeStats.textContent = `(${page_idx}/${num_pages})`;
   }
 }
 
 export function setVolumeStatus(volume_id, text) {
-  let volumeStatus = document.getElementById("volumeStatus" + volume_id);
+  const volumeStatus = document.getElementById(`volumeStatus${volume_id}`);
   if (volumeStatus !== null) {
     volumeStatus.textContent = text;
   }
 }
 
-document.getElementById("resetCatalogButton").addEventListener(
-  "click",
-  async function () {
-    let msg =
-      "Reset catalog?\n\nThis will delete all data and reading progress from the browser storage.";
+document.getElementById('resetCatalogButton').addEventListener(
+  'click',
+  async () => {
+    const msg =
+      'Reset catalog?\n\nThis will delete all data and reading progress from the browser storage.';
     if (confirm(msg)) {
       await loadVolume(null);
       await clear();

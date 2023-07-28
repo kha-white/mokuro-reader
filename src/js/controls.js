@@ -1,7 +1,7 @@
-import { volumeState } from "./state";
-import { settings } from "./settings";
-import { loadVolume } from "./load-volume";
-import { updatePage } from "./page-utils";
+import { volumeState } from './state';
+import { settings } from './settings';
+import { loadVolume } from './load-volume';
+import { updatePage } from './page-utils';
 
 export function firstPage() {
   updatePage(0);
@@ -68,8 +68,8 @@ export function inputRightRight() {
 
 export async function prevVolume() {
   if (window.loadedVolume !== null) {
-    let volumes = window.loadedVolume.parentTitle.getVolumes();
-    let i = volumes.indexOf(window.loadedVolume);
+    const volumes = window.loadedVolume.parentTitle.getVolumes();
+    const i = volumes.indexOf(window.loadedVolume);
     if (i > 0) {
       await loadVolume(volumes[i - 1].id);
       return true;
@@ -80,8 +80,8 @@ export async function prevVolume() {
 
 export async function nextVolume() {
   if (window.loadedVolume !== null) {
-    let volumes = window.loadedVolume.parentTitle.getVolumes();
-    let i = volumes.indexOf(window.loadedVolume);
+    const volumes = window.loadedVolume.parentTitle.getVolumes();
+    const i = volumes.indexOf(window.loadedVolume);
     if (i < volumes.length - 1) {
       await loadVolume(volumes[i + 1].id);
       return true;

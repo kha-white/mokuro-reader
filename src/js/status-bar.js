@@ -1,15 +1,15 @@
 let statusBarTimeoutId = null;
 
 export function setStatusBarText(text) {
-  document.getElementById("statusBarText").textContent = text;
+  document.getElementById('statusBarText').textContent = text;
 }
 
 export function showStatusBar() {
-  document.getElementById("statusBar").style.opacity = 1;
+  document.getElementById('statusBar').style.opacity = 1;
 }
 
 export function hideStatusBar() {
-  document.getElementById("statusBar").style.opacity = 0;
+  document.getElementById('statusBar').style.opacity = 0;
 }
 
 export function showStatusBarForTime(timeout) {
